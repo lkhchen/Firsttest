@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>clock案例</title>
+	<style>
+		canvas {
+			border: 1px solid #000;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas" width="600" height="400"></canvas>
+</body>
+<script>
+	function toAngle( radian ) {
+		return 180 * radian / Math.PI;
+	}
+	function toRadian( angle ) {
+		return Math.PI * angle / 180;
+	}
+	var canvas = document.getElementById( 'canvas' ),
+		ctx = canvas.getContext( '2d' );
+	
+	var w = canvas.width,
+			h = canvas.height;
+
+	function cornerRect( x, y, w, h, r ) {
+		ctx.moveTo( x, y + r );
+		ctx.arcTo( x, y + h, x + w, y + h, r );
+		ctx.arcTo( x + w, y + h, x + w, y, r );
+		ctx.arcTo( x + w, y, x, y, r );
+		ctx.arcTo(x , y, x, y + h, r );
+	}
+
+	function clock() {
+		// 0. 清除画布
+		ctx.clearRect( 0, 0, w, h );
+		// 1. 表盘
+		ctx.save();
+		ctx.translate( w / 2, h / 2 );
+		ctx.beginPath();
+		cornerRect( -150, -150, 300, 300, 50 );
+		ctx.arc( 0, 0, 130, 0, 2 * Math.PI );
+		ctx.fill();
+		// 2. 刻度
+		var i;
+		// 2.1 小时刻度
+		for( i = 0; i < 12; i++ ){
+			ctx.save();
+			ctx.lineWidth = 8;
+			ctx.rotate( Math.PI * i / 6 );
+			ctx.beginPath();
+			ctx.moveTo( 120, 0 );
+			ctx.lineTo( 130, 0 );
+			ctx.stroke();
+			ctx.restore();
+			// 3. 数字
+			ctx.font = 'bold 14px Consola';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText( i + 3 > 12 ? i + 3 - 12 : i + 3, 
+							110 * Math.cos( Math.PI * i / 6 ),
+							110 * Math.sin( Math.PI * i / 6 ) );
+		}
+		/*ctx.save();
+		for( var i = 0; i < 12; i++ ){
+
+			ctx.font = 'bold 14px Consola';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText( i + 3 > 12 ? i + 3 - 12 : i + 3, 
+							110 * Math.cos( Math.PI * i / 6 ),
+							110 * Math.sin( Math.PI * i / 6 ) );
+			
+			ctx.lineWidth = 8;
+			ctx.rotate( Math.PI / 6 );
+			ctx.beginPath();
+			ctx.moveTo( 120, 0 );
+			ctx.lineTo( 130, 0 );
+			ctx.stroke();		
+		}
+		ctx.restore();*/
+		// 2.2 分秒刻度
+		ctx.save();
+		for( i = 0; i < 60; i++ ){
+			if ( i % 5 != 0 ){
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = 'blue';
+				ctx.beginPath();
+				ctx.moveTo( 124, 0 );
+				ctx.lineTo( 130, 0 );
+				ctx.stroke();
+			}
+			ctx.rotate( Math.PI / 30 );
+		}
+		ctx.restore();	
+		// 4. 品牌
+		ctx.font = '20px Consola';
+		ctx.fillText( 'clock', 0, -80 );
+		// 5. 分时秒针
+		var now = new Date(),
+				hours = now.getHours(),
+				mins = now.getMinutes(),
+				secs = now.getSeconds();
+
+		// 默认时间为 24进制
+		hours = hours > 12 ? hours - 12 : hours;
+		// 5.1 绘制时针
+		ctx.save();
+		ctx.rotate( -Math.PI / 2 );
+		var angle = ( hours + mins / 60 + secs / 3600 ) * Math.PI / 6;
+		ctx.lineWidth = 6;
+		ctx.lineCap = 'round';
+		ctx.beginPath();
+		ctx.moveTo( 0, 0 );
+		ctx.lineTo( Math.cos( angle ) * 60,  Math.sin( angle ) * 60 );
+		ctx.stroke();
+
+		// 5.2 绘制分针
+		angle = ( mins + secs / 60 ) * Math.PI / 30;
+		ctx.lineWidth = 4;
+		ctx.beginPath();
+		ctx.moveTo( 0, 0 );
+		ctx.lineTo( 80 * Math.cos( angle ), 80 * Math.sin( angle ) );
+		ctx.stroke();
+
+		// 5.2 绘制秒针
+		angle = secs * Math.PI / 30;
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.moveTo( 0, 0 );
+		ctx.lineTo( 100 * Math.cos( angle ), 100 * Math.sin( angle ) );
+		ctx.strokeStyle = 'red';
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.arc( 0, 0, 6, 0, 2 * Math.PI );
+		ctx.fillStyle = 'red';
+		ctx.fill();
+
+		ctx.restore();
+		ctx.restore();
+
+		window.requestAnimationFrame( clock );
+	}
+
+	window.requestAnimationFrame( clock );
+</script>
+</html>
