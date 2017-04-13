@@ -1,1 +1,1 @@
-this just a test
+This is a  little case of a clock . 
